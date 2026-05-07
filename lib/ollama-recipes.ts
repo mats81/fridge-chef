@@ -59,6 +59,36 @@ Antworte ausschließlich mit einem JSON-Objekt in diesem Format:
 }`;
 }
 
+async function searchFoodImage(query: string): Promise<string> {
+  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  if (!accessKey) return "";
+
+  const cacheKey = `unsplash-${query}`;
+  const cached = simpleCache.get(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const url = new URL("https://api.unsplash.com/search/photos");
+    url.searchParams.set("query", `${query} food`);
+    url.searchParams.set("per_page", "1");
+    url.searchParams.set("orientation", "landscape");
+
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: `Client-ID ${accessKey}` },
+    });
+
+    if (!response.ok) return "";
+
+    const data = await response.json();
+    const imageUrl: string = data.results?.[0]?.urls?.regular ?? "";
+
+    if (imageUrl) simpleCache.set(cacheKey, imageUrl);
+    return imageUrl;
+  } catch {
+    return "";
+  }
+}
+
 export function getOllamaRecipeById(id: string): Recipe | null {
   return simpleCache.get(`ollama-recipe-${id}`) ?? null;
 }
@@ -136,6 +166,13 @@ export async function fetchOllamaRecipes(
         sourceUrl: undefined,
       };
     });
+
+    const images = await Promise.all(
+      recipes.map((r) => searchFoodImage(r.title))
+    );
+    for (let i = 0; i < recipes.length; i++) {
+      recipes[i].image = images[i];
+    }
 
     simpleCache.set(cacheKey, recipes);
 
