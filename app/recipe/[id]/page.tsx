@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { recipes } from "@/lib/recipes";
 import { fetchOnlineRecipesByIngredients } from "@/lib/online-recipes";
+import { getOllamaRecipeById } from "@/lib/ollama-recipes";
 import { normalize, expandIngredients, translateIngredientName } from "@/lib/ingredient-meta";
 import { RecipeImage } from "@/components/recipe-image";
 import { AddMissingToShoppingList } from "@/components/add-missing-to-shopping-list";
@@ -55,6 +56,10 @@ export default async function RecipeDetailPage({
     });
 
     recipe = onlineRecipes.find((item) => item.id === id);
+  }
+
+  if (!recipe && id.startsWith("ollama-")) {
+    recipe = getOllamaRecipeById(id) ?? undefined;
   }
 
   if (!recipe) {

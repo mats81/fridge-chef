@@ -7,3 +7,5 @@ services:
       - "3800:3000"
     environment:
       - SPOONACULAR_API_KEY=${SPOONACULAR_API_KEY:-}
+      - OLLAMA_BASE_URL=http://192.168.1.164:11434
+      - OLLAMA_MODEL=llama3.2:3b

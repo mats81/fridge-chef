@@ -10,7 +10,7 @@ type Props = Omit<ImageProps, "onError"> & {
 export function RecipeImage({ fallbackClass, alt, ...props }: Props) {
   const [failed, setFailed] = useState(false);
 
-  if (failed) {
+  if (failed || !props.src) {
     return (
       <div
         className={`flex items-center justify-center bg-[var(--chip)] text-[var(--muted)] ${fallbackClass ?? ""}`}

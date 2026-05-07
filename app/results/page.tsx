@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { RecipeCard } from "@/components/recipe-card";
+import { OllamaRecipeSection } from "@/components/ollama-recipe-section";
 import { recipes } from "@/lib/recipes";
 import { getRecommendations } from "@/lib/matching";
 import { fetchOnlineRecipesByIngredients } from "@/lib/online-recipes";
@@ -179,6 +181,36 @@ export default async function ResultsPage({
             ))}
           </div>
         </section>
+      ) : null}
+
+      {process.env.OLLAMA_BASE_URL && ingredients.length > 0 ? (
+        <Suspense
+          fallback={
+            <section className="mt-12 space-y-6">
+              <div className="space-y-3">
+                <p className="chip w-fit animate-pulse">
+                  KI-Rezeptideen werden generiert…
+                </p>
+              </div>
+              <div className="grid gap-8">
+                {[0, 1].map((i) => (
+                  <div key={i} className="card animate-pulse">
+                    <div className="h-72 bg-[var(--chip)]" />
+                    <div className="space-y-4 p-6">
+                      <div className="h-4 w-3/4 rounded bg-[var(--chip)]" />
+                      <div className="h-4 w-1/2 rounded bg-[var(--chip)]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          }
+        >
+          <OllamaRecipeSection
+            ingredients={ingredients}
+            haveParam={haveParam}
+          />
+        </Suspense>
       ) : null}
 
       {directRecommendations.length > 0 ? (
