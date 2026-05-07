@@ -1,0 +1,9 @@
+services:
+  fridge-chef:
+    build: .
+    container_name: fridge-chef
+    restart: unless-stopped
+    ports:
+      - "3800:3000"
+    environment:
+      - SPOONACULAR_API_KEY=${SPOONACULAR_API_KEY:-}
