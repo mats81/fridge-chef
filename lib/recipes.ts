@@ -364,5 +364,589 @@ export const recipes: Recipe[] = [
     ],
     nutrition: { calories: 430, protein: 17, carbs: 68, fat: 9 },
     substitutions: ["Mit Spinat ergänzen, falls du mehr Gemüse möchtest."]
+  },
+  {
+    id: "thai-green-curry",
+    title: "Grünes Thai-Curry mit Gemüse",
+    description: "Aromatisch, cremig und voller Geschmack – ein Klassiker der thailändischen Küche.",
+    category: "curry",
+    cuisine: "thai",
+    tags: ["comfort", "creative"],
+    diet: ["vegan", "vegetarian", "gluten-free", "lactose-free"],
+    base: "rice",
+    method: "pan",
+    timeMinutes: 25,
+    difficulty: "Medium",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "rice", displayName: "Reis", amount: 200, unit: "g" },
+      { name: "coconut milk", displayName: "Kokosmilch", amount: 400, unit: "ml" },
+      { name: "green curry paste", displayName: "Grüne Currypaste", amount: 2, unit: "EL" },
+      { name: "zucchini", displayName: "Zucchini", amount: 1, unit: "Stk" },
+      { name: "bell pepper", displayName: "Paprika", amount: 1, unit: "Stk" },
+      { name: "tofu", displayName: "Tofu", amount: 200, unit: "g", optional: true },
+      { name: "basil", displayName: "Basilikum", optional: true }
+    ],
+    steps: [
+      "Reis kochen.",
+      "Currypaste in etwas Kokosmilch anbraten.",
+      "Gemüse und restliche Kokosmilch zugeben und 10 Minuten köcheln.",
+      "Optional Tofu dazugeben und mit Basilikum servieren."
+    ],
+    nutrition: { calories: 580, protein: 14, carbs: 62, fat: 30 },
+    substitutions: ["Currypaste durch rote Currypaste ersetzen.", "Kokosmilch durch Sahne ersetzen (nicht mehr vegan)."]
+  },
+  {
+    id: "kartoffelpuffer",
+    title: "Kartoffelpuffer mit Apfelmus",
+    description: "Knusprig, goldbraun und ein echter Klassiker der deutschen Küche.",
+    category: "pan",
+    cuisine: "german",
+    tags: ["comfort", "kid-friendly"],
+    diet: ["vegetarian", "budget", "kid-friendly", "lactose-free"],
+    base: "potato",
+    method: "pan",
+    timeMinutes: 30,
+    difficulty: "Easy",
+    servings: 3,
+    image:
+      "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "potato", displayName: "Kartoffeln", amount: 500, unit: "g" },
+      { name: "egg", displayName: "Ei", amount: 1, unit: "Stk" },
+      { name: "onion", displayName: "Zwiebel", amount: 1, unit: "Stk" },
+      { name: "flour", displayName: "Mehl", amount: 2, unit: "EL" },
+      { name: "apple sauce", displayName: "Apfelmus", amount: 200, unit: "g", optional: true },
+      { name: "oil", displayName: "Öl" }
+    ],
+    steps: [
+      "Kartoffeln und Zwiebel reiben und gut ausdrücken.",
+      "Mit Ei, Mehl und Salz vermengen.",
+      "In heißem Öl goldbraun ausbacken.",
+      "Mit Apfelmus servieren."
+    ],
+    nutrition: { calories: 420, protein: 10, carbs: 58, fat: 16 },
+    substitutions: ["Apfelmus durch Sauerrahm ersetzen."]
+  },
+  {
+    id: "teriyaki-salmon",
+    title: "Teriyaki-Lachs mit Reis",
+    description: "Glasierter Lachs mit süß-salziger Teriyaki-Sauce – schnell und elegant.",
+    category: "fish",
+    cuisine: "japanese",
+    tags: ["high-protein", "creative"],
+    diet: ["high-protein", "gluten-free", "lactose-free"],
+    base: "fish",
+    method: "pan",
+    timeMinutes: 20,
+    difficulty: "Medium",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "salmon", displayName: "Lachs", amount: 300, unit: "g" },
+      { name: "rice", displayName: "Reis", amount: 200, unit: "g" },
+      { name: "soy sauce", displayName: "Sojasauce", amount: 3, unit: "EL" },
+      { name: "honey", displayName: "Honig", amount: 1, unit: "EL" },
+      { name: "garlic", displayName: "Knoblauch", amount: 1, unit: "Zehe" },
+      { name: "sesame", displayName: "Sesam", optional: true },
+      { name: "spring onion", displayName: "Frühlingszwiebeln", optional: true }
+    ],
+    steps: [
+      "Reis kochen.",
+      "Sojasauce, Honig und Knoblauch zur Teriyaki-Sauce verrühren.",
+      "Lachs in der Pfanne anbraten und mit der Sauce glasieren.",
+      "Mit Reis, Sesam und Frühlingszwiebeln servieren."
+    ],
+    nutrition: { calories: 620, protein: 38, carbs: 60, fat: 22 },
+    substitutions: ["Lachs durch Hähnchenbrust ersetzen.", "Honig durch Ahornsirup ersetzen."]
+  },
+  {
+    id: "burrito-bowl",
+    title: "Mexikanische Burrito Bowl",
+    description: "Bunt, sättigend und vollgepackt mit Aromen – wie Burrito, nur ohne Wrap.",
+    category: "bowl",
+    cuisine: "mexican",
+    tags: ["comfort", "high-protein"],
+    diet: ["vegetarian", "high-protein", "gluten-free"],
+    base: "rice",
+    method: "pan",
+    timeMinutes: 30,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1543339308-d595c4f5c5b3?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "rice", displayName: "Reis", amount: 200, unit: "g" },
+      { name: "black beans", displayName: "Schwarze Bohnen", amount: 1, unit: "Dose" },
+      { name: "corn", displayName: "Mais", amount: 150, unit: "g" },
+      { name: "avocado", displayName: "Avocado", amount: 1, unit: "Stk" },
+      { name: "tomato", displayName: "Tomate", amount: 2, unit: "Stk" },
+      { name: "lime", displayName: "Limette", amount: 1, unit: "Stk", optional: true },
+      { name: "cheese", displayName: "Käse", amount: 50, unit: "g", optional: true }
+    ],
+    steps: [
+      "Reis kochen.",
+      "Bohnen und Mais erwärmen und würzen.",
+      "Tomaten und Avocado schneiden.",
+      "Alles in einer Bowl anrichten und optional mit Käse und Limette toppen."
+    ],
+    nutrition: { calories: 650, protein: 22, carbs: 85, fat: 24 },
+    substitutions: ["Schwarze Bohnen durch Kidneybohnen ersetzen.", "Avocado durch Guacamole ersetzen."]
+  },
+  {
+    id: "dal-tadka",
+    title: "Indisches Dal mit Naan",
+    description: "Cremiges Linsengericht mit aromatischem Tadka – echtes indisches Soulfood.",
+    category: "curry",
+    cuisine: "indian",
+    tags: ["comfort", "budget"],
+    diet: ["vegan", "vegetarian", "high-protein", "budget", "gluten-free", "lactose-free"],
+    base: "legumes",
+    method: "pan",
+    timeMinutes: 35,
+    difficulty: "Medium",
+    servings: 3,
+    image:
+      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "red lentils", displayName: "Rote Linsen", amount: 200, unit: "g" },
+      { name: "onion", displayName: "Zwiebel", amount: 1, unit: "Stk" },
+      { name: "garlic", displayName: "Knoblauch", amount: 2, unit: "Zehen" },
+      { name: "ginger", displayName: "Ingwer", amount: 1, unit: "Stk" },
+      { name: "tomato", displayName: "Tomaten", amount: 2, unit: "Stk" },
+      { name: "cumin", displayName: "Kreuzkümmel", amount: 1, unit: "TL" },
+      { name: "turmeric", displayName: "Kurkuma", amount: 1, unit: "TL", optional: true }
+    ],
+    steps: [
+      "Linsen waschen und mit Wasser weich kochen.",
+      "Zwiebel, Knoblauch und Ingwer anschwitzen.",
+      "Tomaten und Gewürze dazugeben und einkochen lassen.",
+      "Linsen untermischen und mit Naan oder Reis servieren."
+    ],
+    nutrition: { calories: 380, protein: 22, carbs: 58, fat: 6 },
+    substitutions: ["Rote Linsen durch gelbe Linsen ersetzen.", "Mit Reis statt Naan servieren."]
+  },
+  {
+    id: "greek-salad",
+    title: "Griechischer Bauernsalat",
+    description: "Frisch, knackig und mediterran – perfekt als leichte Mahlzeit oder Beilage.",
+    category: "salad",
+    cuisine: "greek",
+    tags: ["light", "quick"],
+    diet: ["vegetarian", "quick", "gluten-free", "budget"],
+    base: "vegetable",
+    method: "cold",
+    timeMinutes: 10,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "cucumber", displayName: "Gurke", amount: 1, unit: "Stk" },
+      { name: "tomato", displayName: "Tomaten", amount: 3, unit: "Stk" },
+      { name: "feta", displayName: "Feta", amount: 150, unit: "g" },
+      { name: "onion", displayName: "Rote Zwiebel", amount: 1, unit: "Stk" },
+      { name: "olive oil", displayName: "Olivenöl" },
+      { name: "olives", displayName: "Oliven", amount: 80, unit: "g", optional: true },
+      { name: "bell pepper", displayName: "Paprika", amount: 1, unit: "Stk", optional: true }
+    ],
+    steps: [
+      "Gemüse in große Stücke schneiden.",
+      "Feta darüber bröseln.",
+      "Mit Olivenöl, Salz und Oregano würzen."
+    ],
+    nutrition: { calories: 320, protein: 14, carbs: 16, fat: 22 },
+    substitutions: ["Feta durch veganen Käse ersetzen."]
+  },
+  {
+    id: "chicken-stir-fry",
+    title: "Asia-Hähnchenpfanne mit Gemüse",
+    description: "Schnell im Wok, knackiges Gemüse und zartes Hähnchen – besser als vom Lieferservice.",
+    category: "pan",
+    cuisine: "asian",
+    tags: ["quick", "high-protein"],
+    diet: ["quick", "high-protein", "lactose-free"],
+    base: "meat",
+    method: "pan",
+    timeMinutes: 18,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "chicken", displayName: "Hähnchenbrust", amount: 300, unit: "g" },
+      { name: "bell pepper", displayName: "Paprika", amount: 1, unit: "Stk" },
+      { name: "broccoli", displayName: "Brokkoli", amount: 150, unit: "g" },
+      { name: "soy sauce", displayName: "Sojasauce", amount: 3, unit: "EL" },
+      { name: "garlic", displayName: "Knoblauch", amount: 2, unit: "Zehen" },
+      { name: "rice", displayName: "Reis", amount: 200, unit: "g", optional: true },
+      { name: "sesame oil", displayName: "Sesamöl", optional: true }
+    ],
+    steps: [
+      "Hähnchen in Streifen schneiden und scharf anbraten.",
+      "Gemüse dazugeben und kurz mitbraten.",
+      "Mit Sojasauce und Knoblauch ablöschen.",
+      "Optional mit Reis servieren."
+    ],
+    nutrition: { calories: 480, protein: 42, carbs: 28, fat: 18 },
+    substitutions: ["Hähnchen durch Tofu ersetzen.", "Brokkoli durch Zuckerschoten ersetzen."]
+  },
+  {
+    id: "ofenkartoffeln",
+    title: "Ofenkartoffeln mit Kräuterquark",
+    description: "Simpel, günstig und immer lecker – das perfekte Alltagsessen.",
+    category: "bake",
+    cuisine: "german",
+    tags: ["comfort", "budget"],
+    diet: ["vegetarian", "budget", "gluten-free", "kid-friendly"],
+    base: "potato",
+    method: "oven",
+    timeMinutes: 45,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1568569350062-ebfa3cb195df?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "potato", displayName: "Kartoffeln", amount: 4, unit: "Stk" },
+      { name: "quark", displayName: "Quark", amount: 200, unit: "g" },
+      { name: "chives", displayName: "Schnittlauch", optional: true },
+      { name: "garlic", displayName: "Knoblauch", amount: 1, unit: "Zehe", optional: true },
+      { name: "olive oil", displayName: "Olivenöl" },
+      { name: "cheese", displayName: "Käse", amount: 50, unit: "g", optional: true }
+    ],
+    steps: [
+      "Kartoffeln waschen, einritzen und mit Olivenöl einreiben.",
+      "Bei 200°C ca. 40 Minuten backen.",
+      "Quark mit Schnittlauch und Knoblauch verrühren.",
+      "Kartoffeln aufschneiden und mit Kräuterquark füllen."
+    ],
+    nutrition: { calories: 450, protein: 18, carbs: 62, fat: 14 },
+    substitutions: ["Quark durch Schmand oder Joghurt ersetzen."]
+  },
+  {
+    id: "couscous-salad",
+    title: "Bunter Couscous-Salat",
+    description: "Schnell zubereitet, perfekt zum Mitnehmen und herrlich erfrischend.",
+    category: "salad",
+    cuisine: "north african",
+    tags: ["quick", "light"],
+    diet: ["vegan", "vegetarian", "quick", "budget", "lactose-free"],
+    base: "grain",
+    method: "cold",
+    timeMinutes: 15,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "couscous", displayName: "Couscous", amount: 200, unit: "g" },
+      { name: "cucumber", displayName: "Gurke", amount: 1, unit: "Stk" },
+      { name: "tomato", displayName: "Tomaten", amount: 2, unit: "Stk" },
+      { name: "bell pepper", displayName: "Paprika", amount: 1, unit: "Stk" },
+      { name: "lemon", displayName: "Zitrone", amount: 1, unit: "Stk" },
+      { name: "olive oil", displayName: "Olivenöl" },
+      { name: "mint", displayName: "Minze", optional: true }
+    ],
+    steps: [
+      "Couscous mit heißem Wasser übergießen und quellen lassen.",
+      "Gemüse klein schneiden.",
+      "Alles mit Zitronensaft und Olivenöl vermengen.",
+      "Optional mit frischer Minze garnieren."
+    ],
+    nutrition: { calories: 390, protein: 12, carbs: 62, fat: 10 },
+    substitutions: ["Couscous durch Bulgur ersetzen.", "Minze durch Petersilie ersetzen."]
+  },
+  {
+    id: "pasta-aglio-olio",
+    title: "Pasta Aglio e Olio",
+    description: "Der italienische Mitternachtsklassiker – simpel, schnell und unverschämt gut.",
+    category: "pasta",
+    cuisine: "italian",
+    tags: ["quick", "budget"],
+    diet: ["vegan", "vegetarian", "quick", "budget", "lactose-free"],
+    base: "pasta",
+    method: "pan",
+    timeMinutes: 15,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1608219992759-8d74ed8d76eb?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "pasta", displayName: "Spaghetti", amount: 250, unit: "g" },
+      { name: "garlic", displayName: "Knoblauch", amount: 4, unit: "Zehen" },
+      { name: "olive oil", displayName: "Olivenöl", amount: 4, unit: "EL" },
+      { name: "chili flakes", displayName: "Chiliflocken", amount: 1, unit: "TL", optional: true },
+      { name: "parsley", displayName: "Petersilie", optional: true },
+      { name: "parmesan", displayName: "Parmesan", amount: 30, unit: "g", optional: true }
+    ],
+    steps: [
+      "Spaghetti al dente kochen.",
+      "Knoblauch in Scheiben schneiden und in Olivenöl goldbraun anbraten.",
+      "Chiliflocken kurz mitrösten.",
+      "Pasta mit etwas Kochwasser dazugeben und schwenken."
+    ],
+    nutrition: { calories: 520, protein: 14, carbs: 72, fat: 20 },
+    substitutions: ["Chiliflocken weglassen für milde Version."]
+  },
+  {
+    id: "red-thai-chicken-curry",
+    title: "Rotes Thai-Curry mit Hähnchen",
+    description: "Cremig-scharf mit zartem Hähnchen – ein Wohlfühlgericht aus Thailand.",
+    category: "curry",
+    cuisine: "thai",
+    tags: ["comfort", "high-protein"],
+    diet: ["high-protein", "gluten-free", "lactose-free"],
+    base: "meat",
+    method: "pan",
+    timeMinutes: 25,
+    difficulty: "Medium",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "chicken", displayName: "Hähnchenbrust", amount: 300, unit: "g" },
+      { name: "coconut milk", displayName: "Kokosmilch", amount: 400, unit: "ml" },
+      { name: "red curry paste", displayName: "Rote Currypaste", amount: 2, unit: "EL" },
+      { name: "bell pepper", displayName: "Paprika", amount: 1, unit: "Stk" },
+      { name: "bamboo shoots", displayName: "Bambussprossen", amount: 100, unit: "g", optional: true },
+      { name: "rice", displayName: "Reis", amount: 200, unit: "g" },
+      { name: "basil", displayName: "Thai-Basilikum", optional: true }
+    ],
+    steps: [
+      "Reis kochen.",
+      "Hähnchen in Streifen schneiden und anbraten.",
+      "Currypaste kurz anrösten, dann Kokosmilch angießen.",
+      "Gemüse und Hähnchen dazugeben und 10 Minuten köcheln lassen."
+    ],
+    nutrition: { calories: 640, protein: 38, carbs: 58, fat: 28 },
+    substitutions: ["Hähnchen durch Garnelen oder Tofu ersetzen."]
+  },
+  {
+    id: "roasted-cauliflower",
+    title: "Gerösteter Blumenkohl mit Tahini",
+    description: "Nussig, knusprig und überraschend sättigend – ein unterschätztes Ofengericht.",
+    category: "bake",
+    cuisine: "levantine",
+    tags: ["light", "creative"],
+    diet: ["vegan", "vegetarian", "gluten-free", "lactose-free"],
+    base: "vegetable",
+    method: "oven",
+    timeMinutes: 35,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "cauliflower", displayName: "Blumenkohl", amount: 1, unit: "Stk" },
+      { name: "tahini", displayName: "Tahini", amount: 3, unit: "EL" },
+      { name: "lemon", displayName: "Zitrone", amount: 1, unit: "Stk" },
+      { name: "garlic", displayName: "Knoblauch", amount: 2, unit: "Zehen" },
+      { name: "olive oil", displayName: "Olivenöl" },
+      { name: "pomegranate", displayName: "Granatapfelkerne", optional: true },
+      { name: "parsley", displayName: "Petersilie", optional: true }
+    ],
+    steps: [
+      "Blumenkohl in Röschen teilen und mit Olivenöl, Salz und Pfeffer vermengen.",
+      "Bei 220°C ca. 25 Minuten rösten, bis er goldbraun ist.",
+      "Tahini mit Zitronensaft und Knoblauch zu einem Dressing verrühren.",
+      "Blumenkohl mit Tahini-Dressing und optional Granatapfelkernen servieren."
+    ],
+    nutrition: { calories: 310, protein: 12, carbs: 22, fat: 20 },
+    substitutions: ["Tahini durch Erdnussbutter ersetzen.", "Blumenkohl durch Brokkoli ersetzen."]
+  },
+  {
+    id: "hackpfanne-paprika",
+    title: "Hackfleisch-Paprika-Pfanne",
+    description: "Deftig, würzig und in 20 Minuten fertig – ein Pfannengericht für jeden Tag.",
+    category: "pan",
+    cuisine: "hungarian",
+    tags: ["comfort", "quick"],
+    diet: ["quick", "high-protein", "gluten-free", "kid-friendly"],
+    base: "meat",
+    method: "pan",
+    timeMinutes: 20,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1594041680534-e8c8cdebd659?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "ground beef", displayName: "Hackfleisch", amount: 300, unit: "g" },
+      { name: "bell pepper", displayName: "Paprika", amount: 2, unit: "Stk" },
+      { name: "onion", displayName: "Zwiebel", amount: 1, unit: "Stk" },
+      { name: "tomato paste", displayName: "Tomatenmark", amount: 2, unit: "EL" },
+      { name: "paprika powder", displayName: "Paprikapulver", amount: 1, unit: "TL" },
+      { name: "rice", displayName: "Reis", amount: 200, unit: "g", optional: true },
+      { name: "sour cream", displayName: "Saure Sahne", amount: 80, unit: "g", optional: true }
+    ],
+    steps: [
+      "Hackfleisch krümelig anbraten.",
+      "Zwiebel und Paprika dazugeben und mitbraten.",
+      "Tomatenmark und Paprikapulver einrühren, kurz köcheln.",
+      "Optional mit Reis und Saurer Sahne servieren."
+    ],
+    nutrition: { calories: 540, protein: 34, carbs: 18, fat: 36 },
+    substitutions: ["Hackfleisch durch veganes Hack ersetzen.", "Saure Sahne durch Joghurt ersetzen."]
+  },
+  {
+    id: "overnight-oats",
+    title: "Overnight Oats mit Beeren",
+    description: "Am Abend vorbereiten, morgens genießen – das einfachste Frühstück der Welt.",
+    category: "breakfast",
+    cuisine: "international",
+    tags: ["quick", "light"],
+    diet: ["vegetarian", "budget", "kid-friendly"],
+    base: "grain",
+    method: "cold",
+    timeMinutes: 5,
+    difficulty: "Easy",
+    servings: 1,
+    image:
+      "https://images.unsplash.com/photo-1517673400267-0251440c45dc?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "oats", displayName: "Haferflocken", amount: 60, unit: "g" },
+      { name: "milk", displayName: "Milch", amount: 150, unit: "ml" },
+      { name: "yogurt", displayName: "Joghurt", amount: 80, unit: "g" },
+      { name: "berries", displayName: "Beeren", amount: 100, unit: "g" },
+      { name: "honey", displayName: "Honig", amount: 1, unit: "EL", optional: true },
+      { name: "banana", displayName: "Banane", amount: 1, unit: "Stk", optional: true }
+    ],
+    steps: [
+      "Haferflocken, Milch und Joghurt verrühren.",
+      "Über Nacht im Kühlschrank quellen lassen.",
+      "Morgens mit Beeren und optional Honig toppen."
+    ],
+    nutrition: { calories: 340, protein: 14, carbs: 52, fat: 8 },
+    substitutions: ["Milch durch Hafermilch ersetzen.", "Joghurt durch pflanzliche Alternative ersetzen."]
+  },
+  {
+    id: "quesadillas",
+    title: "Käse-Quesadillas mit Salsa",
+    description: "Knusprig, käsig und in unter 10 Minuten fertig – der perfekte Snack.",
+    category: "wrap",
+    cuisine: "mexican",
+    tags: ["quick", "kid-friendly"],
+    diet: ["vegetarian", "quick", "kid-friendly"],
+    base: "bread",
+    method: "pan",
+    timeMinutes: 10,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1618040996337-56904b7850b9?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "wraps", displayName: "Tortillas", amount: 4, unit: "Stk" },
+      { name: "cheese", displayName: "Käse", amount: 150, unit: "g" },
+      { name: "tomato", displayName: "Tomate", amount: 1, unit: "Stk" },
+      { name: "corn", displayName: "Mais", amount: 80, unit: "g", optional: true },
+      { name: "jalapeño", displayName: "Jalapeño", amount: 1, unit: "Stk", optional: true },
+      { name: "sour cream", displayName: "Saure Sahne", optional: true }
+    ],
+    steps: [
+      "Tortilla mit Käse und Füllung belegen.",
+      "Zweite Tortilla auflegen.",
+      "In der Pfanne von beiden Seiten goldbraun braten.",
+      "In Stücke schneiden und mit Salsa oder Saurer Sahne servieren."
+    ],
+    nutrition: { calories: 480, protein: 22, carbs: 38, fat: 26 },
+    substitutions: ["Tortillas durch Wraps ersetzen.", "Käse durch veganen Käse ersetzen."]
+  },
+  {
+    id: "miso-soup",
+    title: "Japanische Miso-Suppe",
+    description: "Leicht, wärmend und voller Umami – in 10 Minuten fertig.",
+    category: "soup",
+    cuisine: "japanese",
+    tags: ["light", "quick"],
+    diet: ["vegan", "vegetarian", "quick", "budget", "lactose-free"],
+    base: "vegetable",
+    method: "pan",
+    timeMinutes: 10,
+    difficulty: "Easy",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "miso paste", displayName: "Misopaste", amount: 2, unit: "EL" },
+      { name: "tofu", displayName: "Seidentofu", amount: 150, unit: "g" },
+      { name: "spring onion", displayName: "Frühlingszwiebeln", amount: 2, unit: "Stk" },
+      { name: "seaweed", displayName: "Wakame (Algen)", amount: 5, unit: "g", optional: true },
+      { name: "mushrooms", displayName: "Pilze", amount: 50, unit: "g", optional: true }
+    ],
+    steps: [
+      "Wasser zum Kochen bringen.",
+      "Tofu würfeln und mit optionalen Pilzen ins Wasser geben.",
+      "Vom Herd nehmen und Misopaste einrühren (nicht mehr kochen!).",
+      "Mit Frühlingszwiebeln und Wakame servieren."
+    ],
+    nutrition: { calories: 120, protein: 10, carbs: 8, fat: 5 },
+    substitutions: ["Seidentofu durch festen Tofu ersetzen."]
+  },
+  {
+    id: "french-onion-soup",
+    title: "Französische Zwiebelsuppe",
+    description: "Karamellisierte Zwiebeln, kräftige Brühe und überbackener Käse – pure Wärme.",
+    category: "soup",
+    cuisine: "french",
+    tags: ["comfort"],
+    diet: ["vegetarian"],
+    base: "vegetable",
+    method: "pan",
+    timeMinutes: 45,
+    difficulty: "Medium",
+    servings: 2,
+    image:
+      "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "onion", displayName: "Zwiebeln", amount: 4, unit: "Stk" },
+      { name: "butter", displayName: "Butter", amount: 30, unit: "g" },
+      { name: "vegetable broth", displayName: "Gemüsebrühe", amount: 750, unit: "ml" },
+      { name: "bread", displayName: "Baguette", amount: 4, unit: "Scheiben" },
+      { name: "cheese", displayName: "Gruyère oder Emmentaler", amount: 100, unit: "g" },
+      { name: "thyme", displayName: "Thymian", optional: true }
+    ],
+    steps: [
+      "Zwiebeln in Ringe schneiden und in Butter langsam karamellisieren (20 Min.).",
+      "Mit Brühe ablöschen und 15 Minuten köcheln lassen.",
+      "In ofenfeste Schüsseln füllen, Brot und Käse darauf verteilen.",
+      "Im Ofen überbacken, bis der Käse goldbraun ist."
+    ],
+    nutrition: { calories: 420, protein: 18, carbs: 38, fat: 22 },
+    substitutions: ["Gruyère durch Gouda ersetzen.", "Butter durch Olivenöl ersetzen."]
+  },
+  {
+    id: "sweet-potato-curry",
+    title: "Süßkartoffel-Kichererbsen-Curry",
+    description: "Cremig, wärmend und voll mit pflanzlichem Protein – ein veganer Liebling.",
+    category: "curry",
+    cuisine: "indian",
+    tags: ["comfort", "high-protein"],
+    diet: ["vegan", "vegetarian", "high-protein", "gluten-free", "lactose-free"],
+    base: "vegetable",
+    method: "pan",
+    timeMinutes: 30,
+    difficulty: "Easy",
+    servings: 3,
+    image:
+      "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=1200&q=80",
+    ingredients: [
+      { name: "sweet potato", displayName: "Süßkartoffel", amount: 2, unit: "Stk" },
+      { name: "chickpeas", displayName: "Kichererbsen", amount: 1, unit: "Dose" },
+      { name: "coconut milk", displayName: "Kokosmilch", amount: 400, unit: "ml" },
+      { name: "curry powder", displayName: "Currypulver", amount: 2, unit: "TL" },
+      { name: "garlic", displayName: "Knoblauch", amount: 2, unit: "Zehen" },
+      { name: "spinach", displayName: "Spinat", amount: 100, unit: "g", optional: true },
+      { name: "rice", displayName: "Reis", amount: 200, unit: "g", optional: true }
+    ],
+    steps: [
+      "Süßkartoffel schälen und würfeln.",
+      "Knoblauch und Currypulver anbraten, dann Süßkartoffel dazugeben.",
+      "Kokosmilch und Kichererbsen zugeben und 20 Minuten köcheln.",
+      "Optional Spinat unterheben und mit Reis servieren."
+    ],
+    nutrition: { calories: 520, protein: 16, carbs: 68, fat: 22 },
+    substitutions: ["Süßkartoffel durch Kürbis ersetzen.", "Kokosmilch durch Sahne ersetzen."]
   }
 ];
