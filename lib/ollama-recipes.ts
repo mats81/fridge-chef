@@ -107,7 +107,7 @@ export async function fetchOllamaRecipes(
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60_000);
+    const timeout = setTimeout(() => controller.abort(), 120_000);
 
     const response = await fetch(`${baseUrl}/api/chat`, {
       method: "POST",
