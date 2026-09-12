@@ -7,7 +7,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { deriveDietTags } from "../lib/diet.ts";
+import { deriveDietTags } from "../lib/diet";
 
 type Case = {
   title: string;
