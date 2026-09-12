@@ -1,35 +1,58 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  useSyncExternalStore
+} from "react";
+import { createLocalStore } from "@/lib/local-store";
 
 export type ShoppingItem = {
   name: string;
   amount?: number;
   unit?: string;
   quantity: number;
+  done?: boolean;
   recipeIds?: string[];
   recipeTitles?: string[];
+};
+
+type NewItem = {
+  name: string;
+  amount?: number;
+  unit?: string;
+  recipeId?: string;
+  recipeTitle?: string;
 };
 
 type ShoppingListContextValue = {
   items: ShoppingItem[];
   isOpen: boolean;
-  addItems: (
-    items: Array<{
-      name: string;
-      amount?: number;
-      unit?: string;
-      recipeId?: string;
-      recipeTitle?: string;
-    }>
-  ) => void;
+  addItems: (items: NewItem[]) => void;
   removeItem: (name: string) => void;
+  toggleDone: (name: string) => void;
+  clearDone: () => void;
   clearItems: () => void;
   open: () => void;
   close: () => void;
 };
 
-const STORAGE_KEY = "fridge-chef-shopping-list";
+const EMPTY: ShoppingItem[] = [];
+
+const listStore = createLocalStore<ShoppingItem[]>(
+  "fridge-chef-shopping-list",
+  EMPTY,
+  (parsed) => {
+    if (!Array.isArray(parsed)) return null;
+    return parsed.filter(
+      (item): item is ShoppingItem =>
+        Boolean(item) && typeof item === "object" && typeof item.name === "string"
+    );
+  }
+);
 
 const ShoppingListContext = createContext<ShoppingListContextValue | null>(null);
 
@@ -37,105 +60,90 @@ function normalizeName(value: string) {
   return value.trim().toLowerCase();
 }
 
-function loadFromStorage(): ShoppingItem[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
+export function ShoppingListProvider({ children }: { children: React.ReactNode }) {
+  const items = useSyncExternalStore(
+    listStore.subscribe,
+    listStore.getSnapshot,
+    listStore.getServerSnapshot
+  );
 
-function saveToStorage(items: ShoppingItem[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  } catch {
-    // Storage full or unavailable — ignore
-  }
-}
-
-export function ShoppingListProvider({
-  children
-}: {
-  children: React.ReactNode;
-}) {
-  const [items, setItems] = useState<ShoppingItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const hydrated = useRef(false);
 
-  // Load from localStorage on mount (client only)
-  useEffect(() => {
-    setItems(loadFromStorage());
-    hydrated.current = true;
-  }, []);
+  const addItems = useCallback((newItems: NewItem[]) => {
+    const merged = [...listStore.get()];
 
-  // Persist to localStorage on every change (skip initial hydration)
-  useEffect(() => {
-    if (hydrated.current) {
-      saveToStorage(items);
-    }
-  }, [items]);
+    for (const item of newItems) {
+      const index = merged.findIndex(
+        (entry) => normalizeName(entry.name) === normalizeName(item.name)
+      );
 
-  const addItems = (
-    newItems: Array<{
-      name: string;
-      amount?: number;
-      unit?: string;
-      recipeId?: string;
-      recipeTitle?: string;
-    }>
-  ) => {
-    setItems((current) => {
-      const merged = [...current];
-
-      for (const item of newItems) {
-        const index = merged.findIndex(
-          (entry) => normalizeName(entry.name) === normalizeName(item.name)
-        );
-
-        if (index === -1) {
-          merged.push({
-            name: item.name,
-            amount: item.amount,
-            unit: item.unit,
-            quantity: 1,
-            recipeIds: item.recipeId ? [item.recipeId] : [],
-            recipeTitles: item.recipeTitle ? [item.recipeTitle] : []
-          });
-        } else {
-          const existing = merged[index];
-
-          merged[index] = {
-            ...existing,
-            quantity: existing.quantity + 1,
-            recipeIds: item.recipeId
-              ? Array.from(new Set([...(existing.recipeIds ?? []), item.recipeId]))
-              : existing.recipeIds,
-            recipeTitles: item.recipeTitle
-              ? Array.from(new Set([...(existing.recipeTitles ?? []), item.recipeTitle]))
-              : existing.recipeTitles
-          };
-        }
+      if (index === -1) {
+        merged.push({
+          name: item.name,
+          amount: item.amount,
+          unit: item.unit,
+          quantity: 1,
+          recipeIds: item.recipeId ? [item.recipeId] : [],
+          recipeTitles: item.recipeTitle ? [item.recipeTitle] : []
+        });
+        continue;
       }
 
-      return merged;
-    });
-  };
+      const existing = merged[index];
 
-  const removeItem = (name: string) => {
-    setItems((current) =>
-      current.filter((item) => normalizeName(item.name) !== normalizeName(name))
+      // Two recipes needing 200 g each should read "400 g", not "200 g" twice.
+      // Amounts only add up when both sides use the same unit.
+      const sameUnit =
+        existing.unit === item.unit &&
+        typeof existing.amount === "number" &&
+        typeof item.amount === "number";
+
+      merged[index] = {
+        ...existing,
+        amount: sameUnit
+          ? (existing.amount as number) + (item.amount as number)
+          : existing.amount,
+        quantity: existing.quantity + 1,
+        recipeIds: item.recipeId
+          ? Array.from(new Set([...(existing.recipeIds ?? []), item.recipeId]))
+          : existing.recipeIds,
+        recipeTitles: item.recipeTitle
+          ? Array.from(new Set([...(existing.recipeTitles ?? []), item.recipeTitle]))
+          : existing.recipeTitles
+      };
+    }
+
+    listStore.set(merged);
+  }, []);
+
+  const removeItem = useCallback((name: string) => {
+    listStore.set(
+      listStore.get().filter((item) => normalizeName(item.name) !== normalizeName(name))
     );
-  };
+  }, []);
 
-  const clearItems = () => {
-    setItems([]);
-    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
-  };
-  const open = () => setIsOpen(true);
-  const close = () => setIsOpen(false);
+  const toggleDone = useCallback((name: string) => {
+    listStore.set(
+      listStore
+        .get()
+        .map((item) =>
+          normalizeName(item.name) === normalizeName(name)
+            ? { ...item, done: !item.done }
+            : item
+        )
+    );
+  }, []);
+
+  const clearDone = useCallback(() => {
+    listStore.set(listStore.get().filter((item) => !item.done));
+  }, []);
+
+  const clearItems = useCallback(() => {
+    listStore.clear();
+  }, []);
+
+  const open = useCallback(() => setIsOpen(true), []);
+  const close = useCallback(() => setIsOpen(false), []);
 
   const value = useMemo(
     () => ({
@@ -143,17 +151,17 @@ export function ShoppingListProvider({
       isOpen,
       addItems,
       removeItem,
+      toggleDone,
+      clearDone,
       clearItems,
       open,
       close
     }),
-    [items, isOpen]
+    [items, isOpen, addItems, removeItem, toggleDone, clearDone, clearItems, open, close]
   );
 
   return (
-    <ShoppingListContext.Provider value={value}>
-      {children}
-    </ShoppingListContext.Provider>
+    <ShoppingListContext.Provider value={value}>{children}</ShoppingListContext.Provider>
   );
 }
 

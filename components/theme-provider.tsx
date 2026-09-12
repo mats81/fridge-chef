@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -18,54 +18,85 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 const STORAGE_KEY = "fridge-chef-theme";
 
-function getSystemTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
+/**
+ * Stored as a bare string, not JSON — the inline anti-flash script in the root
+ * layout reads this same key before React boots and compares it directly.
+ * Snapshots are primitives, so there is no reference-stability concern.
+ */
+const themeStore = {
+  listeners: new Set<() => void>(),
 
-function resolve(theme: Theme): "light" | "dark" {
-  return theme === "system" ? getSystemTheme() : theme;
-}
+  subscribe(listener: () => void) {
+    themeStore.listeners.add(listener);
+    window.addEventListener("storage", listener);
 
-function applyTheme(resolved: "light" | "dark") {
-  document.documentElement.classList.toggle("dark", resolved === "dark");
-}
+    return () => {
+      themeStore.listeners.delete(listener);
+      window.removeEventListener("storage", listener);
+    };
+  },
+
+  getSnapshot(): Theme {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw === "dark" || raw === "light" || raw === "system") return raw;
+    } catch {
+      // Storage unavailable — fall through to the system preference
+    }
+    return "system";
+  },
+
+  getServerSnapshot: (): Theme => "system",
+
+  set(value: Theme) {
+    try {
+      localStorage.setItem(STORAGE_KEY, value);
+    } catch {
+      // ignore
+    }
+    for (const listener of themeStore.listeners) listener();
+  }
+};
+
+/** Subscribe to the OS colour scheme so "system" keeps following it. */
+const systemThemeStore = {
+  subscribe(listener: () => void) {
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    query.addEventListener("change", listener);
+    return () => query.removeEventListener("change", listener);
+  },
+
+  getSnapshot: (): "light" | "dark" =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+
+  getServerSnapshot: (): "light" | "dark" => "light"
+};
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("system");
-  const [resolved, setResolved] = useState<"light" | "dark">("light");
+  const theme = useSyncExternalStore(
+    themeStore.subscribe,
+    themeStore.getSnapshot,
+    themeStore.getServerSnapshot
+  );
 
-  // Hydrate from localStorage
+  const systemTheme = useSyncExternalStore(
+    systemThemeStore.subscribe,
+    systemThemeStore.getSnapshot,
+    systemThemeStore.getServerSnapshot
+  );
+
+  const resolved: "light" | "dark" = theme === "system" ? systemTheme : theme;
+
+  // Pushing a class onto <html> is exactly what effects are for: syncing React
+  // state into an external system. The inline script handles the first paint,
+  // this keeps it correct afterwards.
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const initial = stored === "light" || stored === "dark" ? stored : "system";
-    setTheme(initial);
-    const r = resolve(initial);
-    setResolved(r);
-    applyTheme(r);
-  }, []);
+    document.documentElement.classList.toggle("dark", resolved === "dark");
+  }, [resolved]);
 
-  // Listen for system theme changes
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      if (theme === "system") {
-        const r = getSystemTheme();
-        setResolved(r);
-        applyTheme(r);
-      }
-    };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, [theme]);
-
-  function toggle() {
-    const next: Theme = resolved === "light" ? "dark" : "light";
-    setTheme(next);
-    setResolved(next);
-    applyTheme(next);
-    localStorage.setItem(STORAGE_KEY, next);
-  }
+  const toggle = useCallback(() => {
+    themeStore.set(resolved === "light" ? "dark" : "light");
+  }, [resolved]);
 
   return (
     <ThemeContext.Provider value={{ theme, resolved, toggle }}>
