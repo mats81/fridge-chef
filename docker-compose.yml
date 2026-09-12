@@ -4,9 +4,24 @@ services:
     container_name: fridge-chef
     restart: unless-stopped
     ports:
-      - "3800:3000"
+      - "${PORT:-3800}:3000"
+    volumes:
+      # Keeps AI/online recipes resolvable across container restarts
+      - ./data:/data
     environment:
+      - DATA_DIR=/data
+
+      # Optional: online recipe fallback (https://spoonacular.com/food-api)
       - SPOONACULAR_API_KEY=${SPOONACULAR_API_KEY:-}
-      - OLLAMA_BASE_URL=http://192.168.1.164:11434
-      - OLLAMA_MODEL=llama3.2:3b
-      - UNSPLASH_ACCESS_KEY=6Q3Yp6bWlUjKru3dj7Je-Vya4BPoK29koVjT-7FSWpw
+
+      # Optional: AI recipe ideas from a local Ollama instance
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:3b}
+      - OLLAMA_TIMEOUT_MS=${OLLAMA_TIMEOUT_MS:-120000}
+
+      # Optional: photo -> ingredients. Needs a vision model, e.g. llava:7b
+      - OLLAMA_VISION_MODEL=${OLLAMA_VISION_MODEL:-}
+      - OLLAMA_VISION_TIMEOUT_MS=${OLLAMA_VISION_TIMEOUT_MS:-120000}
+
+      # Optional: images for AI-generated recipes
+      - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY:-}

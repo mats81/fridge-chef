@@ -1,8 +1,9 @@
-const CACHE_NAME = "fridge-chef-v1";
+const CACHE_NAME = "fridge-chef-v2";
 
 const PRECACHE_URLS = [
   "/",
   "/cook",
+  "/favorites",
 ];
 
 // Install: precache app shell
@@ -36,6 +37,9 @@ self.addEventListener("fetch", (event) => {
 
   // Skip external requests (API calls to Spoonacular etc.)
   if (!request.url.startsWith(self.location.origin)) return;
+
+  // Never cache our own API — health and vision must always hit the server
+  if (new URL(request.url).pathname.startsWith("/api/")) return;
 
   // Navigation requests: network-first with cache fallback
   if (request.mode === "navigate") {
