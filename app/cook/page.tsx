@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IngredientInput } from "@/components/ingredient-input";
+import { isVisionEnabled } from "@/lib/vision";
 
 export const metadata: Metadata = {
   title: "Zutaten eingeben — Fridge Chef",
@@ -19,7 +20,7 @@ export default function CookPage() {
           </p>
         </div>
 
-        <IngredientInput />
+        <IngredientInput visionEnabled={isVisionEnabled()} />
       </section>
     </main>
   );
