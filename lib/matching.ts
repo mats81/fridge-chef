@@ -1,5 +1,6 @@
 import { Recipe, DietTag } from "@/lib/types";
-import { normalize, aliasMap, expandIngredients, translateIngredientName } from "@/lib/ingredient-meta";
+import { expandIngredients, hasIngredient, translateIngredientName } from "@/lib/ingredient-meta";
+import { deriveDietTags } from "@/lib/diet";
 
 type MatchFilters = Partial<Record<DietTag, boolean>>;
 
@@ -11,11 +12,24 @@ export interface Recommendation {
   reason: string;
 }
 
-function supportsFilters(recipe: Recipe, filters: MatchFilters) {
-  const active = Object.entries(filters)
-    .filter(([, v]) => v)
-    .map(([k]) => k as DietTag);
-  return active.every((filter) => recipe.diet.includes(filter));
+function activeFilters(filters: MatchFilters): DietTag[] {
+  return Object.entries(filters)
+    .filter(([, value]) => value)
+    .map(([key]) => key as DietTag);
+}
+
+/**
+ * Runtime recipes (online, AI) ship without diet tags. Falling back to derived
+ * tags keeps them eligible instead of silently dropping them on every filter.
+ */
+function dietTagsFor(recipe: Recipe): DietTag[] {
+  return recipe.diet.length > 0 ? recipe.diet : deriveDietTags(recipe);
+}
+
+function supportsFilters(recipe: Recipe, active: DietTag[]) {
+  if (active.length === 0) return true;
+  const diet = dietTagsFor(recipe);
+  return active.every((filter) => diet.includes(filter));
 }
 
 function bucketFor(recipe: Recipe) {
@@ -40,20 +54,14 @@ export function getRecommendations(
   variation = 0
 ): Recommendation[] {
   const have = expandIngredients(availableIngredients);
+  const active = activeFilters(filters);
 
   const candidates = recipes
-    .filter((recipe) => supportsFilters(recipe, filters) || Object.values(filters).every((v) => !v))
+    .filter((recipe) => supportsFilters(recipe, active))
     .map((recipe) => {
       const required = recipe.ingredients.filter((i) => !i.optional);
-      const matchedIngredients = required.filter(
-        (i) =>
-          have.has(normalize(i.name)) ||
-          aliasMap[normalize(i.name)]?.some((a) => have.has(normalize(a)))
-      );
-
-      const missingIngredients = required.filter(
-        (i) => !matchedIngredients.includes(i)
-      );
+      const matchedIngredients = required.filter((i) => hasIngredient(have, i.name));
+      const missingIngredients = required.filter((i) => !matchedIngredients.includes(i));
 
       const matched = matchedIngredients.map(
         (i) => i.displayName ?? translateIngredientName(i.name)
@@ -97,16 +105,19 @@ export function getRecommendations(
     ...allBuckets.slice(0, offset)
   ];
 
-  // Skip the top `variation` candidates per bucket to avoid repeating results
-  const skip = Math.floor(variation / allBuckets.length);
-
+  const round = Math.floor(variation / allBuckets.length);
   const selected: Recommendation[] = [];
 
   for (const bucket of preferredBuckets) {
     const bucketCandidates = candidates.filter(
       (c) => bucketFor(c.recipe) === bucket && !selected.some((s) => s.recipe.id === c.recipe.id)
     );
-    const candidate = bucketCandidates[Math.min(skip, bucketCandidates.length - 1)];
+
+    if (bucketCandidates.length === 0) continue;
+
+    // Wrap around instead of clamping, so "3 neue Ideen" keeps cycling
+    // through the bucket rather than getting stuck on the last entry.
+    const candidate = bucketCandidates[round % bucketCandidates.length];
     if (candidate) selected.push(candidate);
   }
 

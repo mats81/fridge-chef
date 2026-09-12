@@ -102,29 +102,64 @@ export const ingredientTranslations: Record<string, string> = {
   pepper: "Pfeffer"
 };
 
-/** Expand a list of user-entered ingredients into a Set of all normalized variants. */
-export function expandIngredients(items: string[]) {
-  const raw = items.map(normalize);
-  const expanded = new Set(raw);
+/**
+ * Reverse index from every known spelling to its canonical English key.
+ * Built once so matching works regardless of whether a recipe names an
+ * ingredient in English ("tomato"), German ("Tomaten") or a variant.
+ */
+const canonicalByVariant: Record<string, string> = (() => {
+  const index: Record<string, string> = {};
 
   for (const [key, aliases] of Object.entries(aliasMap)) {
-    if ([key, ...aliases].some((entry) => raw.includes(normalize(entry)))) {
-      expanded.add(normalize(key));
-      aliases.forEach((alias) => expanded.add(normalize(alias)));
+    index[normalize(key)] = key;
+    for (const alias of aliases) {
+      index[normalize(alias)] = key;
+    }
+  }
+
+  return index;
+})();
+
+/** Map any known spelling of an ingredient to its canonical form. */
+export function canonicalize(name: string) {
+  const normalized = normalize(name);
+  return canonicalByVariant[normalized] ?? normalized;
+}
+
+/** Expand a list of user-entered ingredients into a Set of all normalized variants. */
+export function expandIngredients(items: string[]) {
+  const expanded = new Set<string>();
+
+  for (const item of items) {
+    const normalized = normalize(item);
+    expanded.add(normalized);
+
+    const canonical = canonicalByVariant[normalized];
+    if (!canonical) continue;
+
+    expanded.add(normalize(canonical));
+    for (const alias of aliasMap[canonical] ?? []) {
+      expanded.add(normalize(alias));
     }
   }
 
   return expanded;
 }
 
-/** Check whether a single ingredient name is contained in an expanded available-set. */
+/**
+ * Check whether a recipe ingredient is covered by the user's available set.
+ * Compares canonical forms, so "Eier" at home satisfies a recipe asking for "egg".
+ */
 export function hasIngredient(available: Set<string>, ingredientName: string) {
   const normalized = normalize(ingredientName);
-
   if (available.has(normalized)) return true;
 
-  const aliases = aliasMap[normalized] ?? [];
-  return aliases.some((alias) => available.has(normalize(alias)));
+  const canonical = canonicalByVariant[normalized];
+  if (!canonical) return false;
+
+  if (available.has(normalize(canonical))) return true;
+
+  return (aliasMap[canonical] ?? []).some((alias) => available.has(normalize(alias)));
 }
 
 /** Translate an English ingredient name to German, with word-by-word fallback. */

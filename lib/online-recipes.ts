@@ -1,6 +1,8 @@
-import { Recipe, Difficulty } from "@/lib/types";
+import { DietTag, Recipe, Difficulty } from "@/lib/types";
 import { simpleCache } from "@/lib/cache";
 import { translateIngredientName } from "@/lib/ingredient-meta";
+import { deriveDietTags } from "@/lib/diet";
+import { saveGeneratedRecipes } from "@/lib/recipe-store";
 
 type SpoonacularSearchResult = {
   id: number;
@@ -87,7 +89,7 @@ async function fetchBulkDetails(
   if (ids.length === 0) return new Map();
 
   const cacheKey = `spoon-bulk-${ids.sort().join(",")}`;
-  const cached = simpleCache.get(cacheKey);
+  const cached = simpleCache.get<Map<number, SpoonacularDetail>>(cacheKey);
   if (cached) return cached;
 
   const url = new URL("https://api.spoonacular.com/recipes/informationBulk");
@@ -95,7 +97,10 @@ async function fetchBulkDetails(
   url.searchParams.set("ids", ids.join(","));
   url.searchParams.set("includeNutrition", "true");
 
-  const response = await fetch(url.toString(), { next: { revalidate: 3600 } });
+  const response = await fetch(url.toString(), {
+    next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(15_000)
+  });
   if (!response.ok) return new Map();
 
   const data = (await response.json()) as SpoonacularDetail[];
@@ -108,6 +113,33 @@ async function fetchBulkDetails(
   return map;
 }
 
+/** Map Spoonacular's diet labels onto our tags and fill the gaps with heuristics. */
+function mergeDiets(apiDiets: string[] | undefined, recipe: Recipe): DietTag[] {
+  const tags = new Set<DietTag>(deriveDietTags(recipe));
+
+  for (const label of apiDiets ?? []) {
+    const normalized = label.toLowerCase();
+    if (normalized.includes("vegetarian")) tags.add("vegetarian");
+    if (normalized.includes("vegan")) tags.add("vegan");
+    if (normalized.includes("gluten free")) tags.add("gluten-free");
+    if (normalized.includes("dairy free")) tags.add("lactose-free");
+  }
+
+  // The API is authoritative when it says a recipe is NOT vegetarian/vegan
+  const declared = (apiDiets ?? []).map((d) => d.toLowerCase());
+  if (declared.length > 0) {
+    if (!declared.some((d) => d.includes("vegetarian") || d.includes("vegan"))) {
+      // Only trust the heuristic here; the API omits the label for meat dishes
+      if (!deriveDietTags(recipe).includes("vegetarian")) {
+        tags.delete("vegetarian");
+        tags.delete("vegan");
+      }
+    }
+  }
+
+  return [...tags];
+}
+
 export async function fetchOnlineRecipesByIngredients(
   ingredients: string[],
   options?: { pantryOnly?: boolean }
@@ -117,7 +149,7 @@ export async function fetchOnlineRecipesByIngredients(
 
   const cacheKey = `spoon-full-${ingredients.sort().join(",")}-${options?.pantryOnly ?? false}`;
 
-  const cached = simpleCache.get(cacheKey);
+  const cached = simpleCache.get<Recipe[]>(cacheKey);
   if (cached) return cached;
 
   // 1. Rezepte nach Zutaten suchen
@@ -128,7 +160,10 @@ export async function fetchOnlineRecipesByIngredients(
   searchUrl.searchParams.set("ranking", options?.pantryOnly ? "1" : "2");
   searchUrl.searchParams.set("ignorePantry", "true");
 
-  const searchResponse = await fetch(searchUrl.toString(), { next: { revalidate: 3600 } });
+  const searchResponse = await fetch(searchUrl.toString(), {
+    next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(15_000)
+  });
   if (!searchResponse.ok) return [];
 
   const searchData = (await searchResponse.json()) as SpoonacularSearchResult[];
@@ -139,7 +174,7 @@ export async function fetchOnlineRecipesByIngredients(
   const details = await fetchBulkDetails(ids, apiKey);
 
   // 3. Zusammenführen
-  const result = searchData.map((item) => {
+  const result: Recipe[] = searchData.map((item) => {
     const detail = details.get(item.id);
     const steps = detail ? extractSteps(detail) : [];
 
@@ -159,7 +194,7 @@ export async function fetchOnlineRecipesByIngredients(
 
     const hasNutrition = nutrition && Object.values(nutrition).some((v) => v !== undefined);
 
-    return {
+    const recipe = {
       id: `spoonacular-${item.id}-${slugify(item.title)}`,
       title: item.title,
       description: missed.length > 0
@@ -171,7 +206,7 @@ export async function fetchOnlineRecipesByIngredients(
       servings,
       category: "online",
       cuisine: detail?.cuisines?.[0] ?? "International",
-      diet: [],
+      diet: [] as DietTag[],
       tags: ["online"],
       base: "mixed",
       method: "mixed",
@@ -182,8 +217,18 @@ export async function fetchOnlineRecipesByIngredients(
       nutrition: hasNutrition ? nutrition : undefined,
       sourceUrl
     } as Recipe;
+
+    // Spoonacular only labels a subset of diets and the rest of the app filters
+    // on our own tags, so combine both instead of leaving `diet` empty.
+    recipe.diet = mergeDiets(detail?.diets, recipe);
+
+    return recipe;
   });
 
   simpleCache.set(cacheKey, result);
+
+  // Persist so /recipe/<id> resolves even without the ?have= parameter
+  await saveGeneratedRecipes(result);
+
   return result;
 }

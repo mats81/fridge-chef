@@ -6,15 +6,36 @@ import { OllamaRecipeSection } from "@/components/ollama-recipe-section";
 import { recipes } from "@/lib/recipes";
 import { getRecommendations } from "@/lib/matching";
 import { fetchOnlineRecipesByIngredients } from "@/lib/online-recipes";
+import type { DietTag } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Deine Rezeptideen — Fridge Chef",
   description: "Drei bewusst unterschiedliche Rezeptvorschläge basierend auf deinen Zutaten."
 };
 
+const DIET_TAGS: DietTag[] = [
+  "vegetarian",
+  "vegan",
+  "high-protein",
+  "budget",
+  "quick",
+  "gluten-free",
+  "lactose-free",
+  "kid-friendly"
+];
+
+/** Only accept known tags — the value comes straight from the query string. */
 function parseFilters(value?: string) {
-  const active = (value ?? "").split(",").filter(Boolean);
-  return Object.fromEntries(active.map((item) => [item, true]));
+  const active = (value ?? "")
+    .split(",")
+    .filter((item): item is DietTag => DIET_TAGS.includes(item as DietTag));
+
+  return {
+    map: Object.fromEntries(active.map((item) => [item, true])) as Partial<
+      Record<DietTag, boolean>
+    >,
+    list: active
+  };
 }
 
 export default async function ResultsPage({
@@ -30,7 +51,7 @@ export default async function ResultsPage({
     .filter(Boolean);
 
   const pantryOnly = params.pantryOnly === "1";
-  const filters = parseFilters(params.filters);
+  const { map: filters, list: activeDiets } = parseFilters(params.filters);
   const variation = parseInt(params.v ?? "0", 10) || 0;
   const haveParam = ingredients.join(",");
 
@@ -209,6 +230,8 @@ export default async function ResultsPage({
           <OllamaRecipeSection
             ingredients={ingredients}
             haveParam={haveParam}
+            diets={activeDiets}
+            variation={variation}
           />
         </Suspense>
       ) : null}

@@ -1,20 +1,64 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Recipe } from "@/lib/types";
 import { recipes } from "@/lib/recipes";
 import { fetchOnlineRecipesByIngredients } from "@/lib/online-recipes";
 import { getOllamaRecipeById } from "@/lib/ollama-recipes";
-import { normalize, expandIngredients, translateIngredientName } from "@/lib/ingredient-meta";
+import { getGeneratedRecipe } from "@/lib/recipe-store";
+import { expandIngredients, hasIngredient, translateIngredientName } from "@/lib/ingredient-meta";
 import { RecipeImage } from "@/components/recipe-image";
+import { RecipeIngredients, type IngredientRow } from "@/components/recipe-ingredients";
 import { AddMissingToShoppingList } from "@/components/add-missing-to-shopping-list";
 import { ShoppingListButton } from "@/components/shopping-list-button";
+import { FavoriteButton } from "@/components/favorite-button";
+
+/**
+ * Resolve a recipe from any of its three sources.
+ * Generated recipes (AI, online) are looked up in the durable store first, so a
+ * link keeps working after the in-memory cache expires or the container restarts.
+ */
+async function resolveRecipe(
+  id: string,
+  availableList: string[]
+): Promise<Recipe | undefined> {
+  const local = recipes.find((item) => item.id === id);
+  if (local) return local;
+
+  const stored = await getGeneratedRecipe(id);
+  if (stored) return stored;
+
+  if (id.startsWith("ollama-")) {
+    const aiRecipe = await getOllamaRecipeById(id);
+    if (aiRecipe) return aiRecipe;
+  }
+
+  // Last resort: re-run the online search the recipe originally came from
+  if (availableList.length > 0) {
+    const onlineRecipes = await fetchOnlineRecipesByIngredients(availableList, {
+      pantryOnly: false
+    });
+    return onlineRecipes.find((item) => item.id === id);
+  }
+
+  return undefined;
+}
 
 export async function generateMetadata({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ have?: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const recipe = recipes.find((item) => item.id === id);
+  const { have } = await searchParams;
+
+  const availableList = (have ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const recipe = await resolveRecipe(id, availableList);
 
   if (!recipe) {
     return { title: "Rezept nicht gefunden — Fridge Chef" };
@@ -26,7 +70,9 @@ export async function generateMetadata({
     openGraph: {
       title: recipe.title,
       description: recipe.description,
-      images: [{ url: recipe.image, width: 1200, height: 630, alt: recipe.title }]
+      images: recipe.image
+        ? [{ url: recipe.image, width: 1200, height: 630, alt: recipe.title }]
+        : undefined
     }
   };
 }
@@ -47,20 +93,7 @@ export default async function RecipeDetailPage({
     .filter(Boolean);
 
   const available = expandIngredients(availableList);
-
-  let recipe = recipes.find((item) => item.id === id);
-
-  if (!recipe && availableList.length > 0) {
-    const onlineRecipes = await fetchOnlineRecipesByIngredients(availableList, {
-      pantryOnly: false
-    });
-
-    recipe = onlineRecipes.find((item) => item.id === id);
-  }
-
-  if (!recipe && id.startsWith("ollama-")) {
-    recipe = getOllamaRecipeById(id) ?? undefined;
-  }
+  const recipe = await resolveRecipe(id, availableList);
 
   if (!recipe) {
     return (
@@ -89,10 +122,20 @@ export default async function RecipeDetailPage({
     );
   }
 
-  const missingItems = recipe.ingredients
-    .filter((item) => !available.has(normalize(item.name)))
+  const ingredientRows: IngredientRow[] = recipe.ingredients.map((item) => ({
+    name: item.name,
+    displayName: item.displayName ?? translateIngredientName(item.name),
+    amount: item.amount,
+    unit: item.unit,
+    optional: item.optional,
+    have: hasIngredient(available, item.name)
+  }));
+
+  // Optional ingredients are garnish, not groceries — keep them off the list
+  const missingItems = ingredientRows
+    .filter((item) => !item.have && !item.optional)
     .map((item) => ({
-      name: item.displayName ?? translateIngredientName(item.name),
+      name: item.displayName,
       amount: item.amount,
       unit: item.unit
     }));
@@ -119,43 +162,23 @@ export default async function RecipeDetailPage({
 
           <div className="mt-6 flex flex-wrap gap-3">
             <ShoppingListButton />
+            <FavoriteButton
+              recipe={{
+                id: recipe.id,
+                title: recipe.title,
+                image: recipe.image,
+                timeMinutes: recipe.timeMinutes,
+                difficulty: recipe.difficulty,
+                have
+              }}
+            />
           </div>
         </div>
       </section>
 
       <section className="container-shell grid gap-8 pt-8 lg:grid-cols-[1.1fr_0.9fr]">
         <article className="glass rounded-[28px] p-6">
-          <h2 className="text-2xl font-semibold">Zutaten</h2>
-
-          <div className="mt-5 space-y-3">
-            {recipe.ingredients.map((item) => {
-              const hasIt = available.has(normalize(item.name));
-              const displayName = item.displayName ?? translateIngredientName(item.name);
-              const quantity = item.amount && item.unit
-                ? `${item.amount} ${item.unit}`
-                : item.amount
-                  ? `${item.amount}`
-                  : null;
-
-              return (
-                <div
-                  key={item.name}
-                  className={`flex items-center justify-between rounded-2xl border p-4 ${
-                    hasIt ? "border-[var(--emerald-border)] bg-[var(--emerald-bg)]" : "border-[var(--amber-border)] bg-[var(--amber-bg)]"
-                  }`}
-                >
-                  <span>
-                    {quantity ? <span className="text-[var(--muted)]">{quantity} </span> : null}
-                    {displayName}
-                    {item.optional ? <span className="ml-1 text-sm text-[var(--muted)]">(optional)</span> : null}
-                  </span>
-                  <span className="text-sm text-[var(--muted)]">
-                    {hasIt ? "Zuhause" : "Fehlt"}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <RecipeIngredients items={ingredientRows} baseServings={recipe.servings} />
         </article>
 
         <aside className="space-y-6">
@@ -181,7 +204,7 @@ export default async function RecipeDetailPage({
             <ol className="mt-5 space-y-4">
               {recipe.steps.map((step, index) => (
                 <li key={step} className="flex gap-4">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)] text-white">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand)] text-white">
                     {index + 1}
                   </span>
                   <span className="pt-1 text-[var(--text-secondary)]">{step}</span>
@@ -193,11 +216,20 @@ export default async function RecipeDetailPage({
           {recipe.nutrition ? (
             <div className="glass rounded-[28px] p-6">
               <h2 className="text-2xl font-semibold">Nährwerte</h2>
+              <p className="mt-1 text-sm text-[var(--muted)]">pro Portion</p>
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="chip">Kalorien: {recipe.nutrition.calories}</div>
-                <div className="chip">Protein: {recipe.nutrition.protein} g</div>
-                <div className="chip">Kohlenhydrate: {recipe.nutrition.carbs} g</div>
-                <div className="chip">Fett: {recipe.nutrition.fat} g</div>
+                {recipe.nutrition.calories !== undefined ? (
+                  <div className="chip">Kalorien: {recipe.nutrition.calories}</div>
+                ) : null}
+                {recipe.nutrition.protein !== undefined ? (
+                  <div className="chip">Protein: {recipe.nutrition.protein} g</div>
+                ) : null}
+                {recipe.nutrition.carbs !== undefined ? (
+                  <div className="chip">Kohlenhydrate: {recipe.nutrition.carbs} g</div>
+                ) : null}
+                {recipe.nutrition.fat !== undefined ? (
+                  <div className="chip">Fett: {recipe.nutrition.fat} g</div>
+                ) : null}
               </div>
             </div>
           ) : null}
@@ -215,32 +247,34 @@ export default async function RecipeDetailPage({
             </div>
           ) : null}
 
-          {recipe.sourceUrl ? (
-            <a
-              href={recipe.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-14 items-center rounded-2xl border border-[var(--line)] px-6"
-            >
-              Originalrezept öffnen
-            </a>
-          ) : null}
+          <div className="flex flex-wrap gap-3">
+            {recipe.sourceUrl ? (
+              <a
+                href={recipe.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-14 items-center rounded-2xl border border-[var(--line)] px-6"
+              >
+                Originalrezept öffnen
+              </a>
+            ) : null}
 
-          {have ? (
+            {have ? (
+              <Link
+                href={`/results?ingredients=${encodeURIComponent(have)}`}
+                className="inline-flex h-14 items-center rounded-2xl border border-[var(--line)] px-6"
+              >
+                Zurück zu den Vorschlägen
+              </Link>
+            ) : null}
+
             <Link
-              href={`/results?ingredients=${encodeURIComponent(have)}`}
-              className="inline-flex h-14 items-center rounded-2xl border border-[var(--line)] px-6"
+              href="/cook"
+              className="inline-flex h-14 items-center rounded-2xl bg-[var(--brand)] px-6 text-white"
             >
-              Zurück zu den Vorschlägen
+              Neue Zutaten eingeben
             </Link>
-          ) : null}
-
-          <Link
-            href="/cook"
-            className="inline-flex h-14 items-center rounded-2xl bg-[var(--brand)] px-6 text-white"
-          >
-            Neue Zutaten eingeben
-          </Link>
+          </div>
         </aside>
       </section>
     </main>
