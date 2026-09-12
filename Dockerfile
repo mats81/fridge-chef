@@ -27,12 +27,16 @@ ENV DATA_DIR=/data
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy standalone output + static assets
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+# Copy standalone output + static assets.
+# --chown matters: without it the files belong to root and the non-root runtime
+# user cannot write .next/cache, which is where next/image stores its optimized
+# images. It still serves them, but re-optimizes on every request.
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Pre-create the data dir so it is writable even without a mounted volume
+# Pre-create the data dir. A named volume inherits this ownership, so the
+# non-root user can write. A bind mount does NOT — see docker-compose.yml.
 RUN mkdir -p /data && chown -R nextjs:nodejs /data
 
 USER nextjs

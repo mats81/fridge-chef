@@ -47,9 +47,24 @@ Ohne jeden API-Key funktioniert die App — dann eben nur mit den 30 lokalen Rez
 docker compose up -d --build
 ```
 
-Läuft danach auf Port `3800`. Das Volume `./data:/data` ist wichtig: dort landen
-die zur Laufzeit generierten Rezepte, damit Links auf KI- und Online-Rezepte auch
-nach einem Neustart noch funktionieren.
+Läuft danach auf Port `3800`.
+
+Das Volume auf `/data` ist wichtig: dort landen die zur Laufzeit generierten
+Rezepte, damit Links auf KI- und Online-Rezepte einen Neustart überleben.
+Compose legt dafür ein **benanntes Volume** an, kein Bind-Mount — der Container
+läuft als nicht-privilegierter User (uid 1001), und ein Bind-Mount behält die
+Rechte des Host-Verzeichnisses. Auf Unraid gehört `appdata` `nobody:users`, der
+Container dürfte dort also nicht schreiben und fiele still auf reinen
+Speicherbetrieb zurück.
+
+Wer trotzdem einen Bind-Mount will (etwa fürs appdata-Backup), muss ihn einmal
+übereignen:
+
+```bash
+mkdir -p ./data && chown -R 1001:1001 ./data
+```
+
+Ob es geklappt hat, sagt der Health-Endpoint: `"persistent": true`.
 
 Der Container bringt einen `HEALTHCHECK` mit, der `/api/health` abfragt. Dieser
 Endpoint zeigt auch, welche Features gerade aktiv sind:

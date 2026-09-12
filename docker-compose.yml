@@ -6,8 +6,18 @@ services:
     ports:
       - "${PORT:-3800}:3000"
     volumes:
-      # Keeps AI/online recipes resolvable across container restarts
-      - ./data:/data
+      # Keeps AI/online recipes resolvable across container restarts.
+      #
+      # A *named* volume is used on purpose: Docker creates it with the
+      # ownership the image declares, so the non-root user inside can write.
+      # A bind mount (./data:/data) keeps the host's ownership instead, which
+      # on Unraid is nobody:users — the container then silently falls back to
+      # memory-only storage. Check /api/health: "persistent" must be true.
+      #
+      # If you prefer a bind mount anyway (e.g. to include it in appdata
+      # backups), create it first and hand it to the container's user:
+      #   mkdir -p ./data && chown -R 1001:1001 ./data
+      - fridge-data:/data
     environment:
       - DATA_DIR=/data
 
@@ -25,3 +35,6 @@ services:
 
       # Optional: images for AI-generated recipes
       - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY:-}
+
+volumes:
+  fridge-data:
